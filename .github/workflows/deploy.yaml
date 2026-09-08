@@ -36,12 +36,12 @@ jobs:
       run: dotnet build -c Release --no-restore
 
     - name: Publish
-      run: dotnet publish -c Release --no-self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --no-build -o ./publish
+      run: dotnet publish -c Release --no-self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --no-build
 
     - name: Zip publish
       uses: montudor/action-zip@v1
       with:
-        args: zip -qq -r ./MyWPFApp_win-x64.zip ./publish
+        args: zip -qq -r ./MyWPFApp_win-x64.zip "MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*.exe"
 
     - name: Create Release
       id: create_release
