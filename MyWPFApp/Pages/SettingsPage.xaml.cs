@@ -1,7 +1,6 @@
-﻿using MyWPFApp.ViewModels.Pages;
-using Wpf.Ui.Abstractions.Controls;
+﻿using Wpf.Ui.Abstractions.Controls;
 
-namespace MyWPFApp.Views.Pages
+namespace MyWPFApp.Pages
 {
     public partial class SettingsPage : INavigableView<SettingsViewModel>
     {

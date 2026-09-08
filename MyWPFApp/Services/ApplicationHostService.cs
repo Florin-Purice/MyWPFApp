@@ -1,59 +1,50 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using MyWPFApp.Views.Pages;
-using MyWPFApp.Views.Windows;
+﻿using Microsoft.Extensions.Hosting;
+using MyWPFApp.Pages;
+using MyWPFApp.Windows;
 using Wpf.Ui;
 
-namespace MyWPFApp.Services
+namespace MyWPFApp.Services;
+
+/// <summary>
+/// Managed host of the application.
+/// </summary>
+public class ApplicationHostService(IServiceProvider _serviceProvider) : IHostedService
 {
+    private INavigationWindow? _navigationWindow;
+
     /// <summary>
-    /// Managed host of the application.
+    /// Triggered when the application host is ready to start the service.
     /// </summary>
-    public class ApplicationHostService : IHostedService
+    /// <param name="cancellationToken">Indicates that the start process has been aborted.</param>
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        private readonly IServiceProvider _serviceProvider;
+        await HandleActivationAsync();
+    }
 
-        private INavigationWindow _navigationWindow;
+    /// <summary>
+    /// Triggered when the application host is performing a graceful shutdown.
+    /// </summary>
+    /// <param name="cancellationToken">Indicates that the shutdown process should no longer be graceful.</param>
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        await Task.CompletedTask;
+    }
 
-        public ApplicationHostService(IServiceProvider serviceProvider)
+    /// <summary>
+    /// Creates main window during activation.
+    /// </summary>
+    private async Task HandleActivationAsync()
+    {
+        if (!Application.Current.Windows.OfType<MainWindow>().Any())
         {
-            _serviceProvider = serviceProvider;
+            _navigationWindow = (
+                _serviceProvider.GetService(typeof(INavigationWindow)) as INavigationWindow
+            )!;
+            _navigationWindow!.ShowWindow();
+
+            _navigationWindow.Navigate(typeof(DashboardPage));
         }
 
-        /// <summary>
-        /// Triggered when the application host is ready to start the service.
-        /// </summary>
-        /// <param name="cancellationToken">Indicates that the start process has been aborted.</param>
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            await HandleActivationAsync();
-        }
-
-        /// <summary>
-        /// Triggered when the application host is performing a graceful shutdown.
-        /// </summary>
-        /// <param name="cancellationToken">Indicates that the shutdown process should no longer be graceful.</param>
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            await Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// Creates main window during activation.
-        /// </summary>
-        private async Task HandleActivationAsync()
-        {
-            if (!Application.Current.Windows.OfType<MainWindow>().Any())
-            {
-                _navigationWindow = (
-                    _serviceProvider.GetService(typeof(INavigationWindow)) as INavigationWindow
-                )!;
-                _navigationWindow!.ShowWindow();
-
-                _navigationWindow.Navigate(typeof(Views.Pages.DashboardPage));
-            }
-
-            await Task.CompletedTask;
-        }
+        await Task.CompletedTask;
     }
 }
