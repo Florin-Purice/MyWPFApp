@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "*"
-      
+
 permissions:
   contents: write   
 
@@ -42,7 +42,19 @@ jobs:
       run: dotnet publish ${{ env.Wap_Project_Path }} -c Release --no-self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --no-build
 
     - name: Zip
-      run: Compress-Archive -Path "MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*.exe" -DestinationPath ./MyWPFApp_win-x64.zip
+      run: Compress-Archive -Path "MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*.exe" -DestinationPath ./MyWPFApp_net10_win-x64.zip
+
+    - name: Clean
+      run: dotnet clean
+
+    - name: Build SelfContained
+      run: dotnet build ${{ env.Wap_Project_Path }} -c Release --no-restore
+
+    - name: Publish SelfContained
+      run: dotnet publish ${{ env.Wap_Project_Path }} -c Release --self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=true -p:DebugType=none -o ./publish
+
+    - name: Zip SelfContained
+      run: Compress-Archive -Path "MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*.exe" -DestinationPath ./MyWPFApp_standalone_win-x64.zip
 
     - name: Create Release
       id: create_release
@@ -64,5 +76,10 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./MyWPFApp_win-x64.zip
         asset_name: MyWPFApp_win-x64.zip
+        asset_content_type: application/zip
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./MyWPFApp_standalone_win-x64.zip
+        asset_name: MyWPFApp_standalone_win-x64.zip
         asset_content_type: application/zip
       
