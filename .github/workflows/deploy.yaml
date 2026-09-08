@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write   
 
+defaults:
+  run:
+    shell: pwsh
+
 jobs:
 
   build:
@@ -42,7 +46,10 @@ jobs:
       run: dotnet publish ${{ env.Wap_Project_Path }} -c Release --no-self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --no-build
 
     - name: Zip
-      run: Compress-Archive -Path "MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*.exe" -DestinationPath ./MyWPFApp_net10_win-x64.zip
+      run: Compress-Archive -Path "./MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*.exe" -DestinationPath ./MyWPFApp_net10_win-x64.zip
+
+    - name: Remove directory
+      run: Remove-Item -Recurse -Force "./MyWPFApp/bin/Release/net10.0-windows/win-x64/publish"
 
     - name: Clean
       run: dotnet clean
@@ -51,10 +58,10 @@ jobs:
       run: dotnet build ${{ env.Wap_Project_Path }} -c Release --no-restore
 
     - name: Publish SelfContained
-      run: dotnet publish ${{ env.Wap_Project_Path }} -c Release --self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=true -p:DebugType=none -o ./publish
+      run: dotnet publish ${{ env.Wap_Project_Path }} -c Release --self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=true -p:DebugType=none
 
     - name: Zip SelfContained
-      run: Compress-Archive -Path "MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*.exe" -DestinationPath ./MyWPFApp_standalone_win-x64.zip
+      run: Compress-Archive -Path "./MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*.exe" -DestinationPath ./MyWPFApp_standalone_win-x64.zip
 
     - name: Create Release
       id: create_release
