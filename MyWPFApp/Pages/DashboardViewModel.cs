@@ -1,13 +1,19 @@
-﻿namespace MyWPFApp.Pages;
+﻿using MyWPFApp.Models;
+
+namespace MyWPFApp.Pages;
 
 public partial class DashboardViewModel : ObservableObject
 {
     [ObservableProperty]
-    private int _counter = 0;
+    public partial int NumberA { get; set; } = 0;
+    [ObservableProperty]
+    public partial int NumberB { get; set; } = 0;
+    [ObservableProperty]
+    public partial int Sum { get; set; } = 0;
 
     [RelayCommand]
-    private void OnCounterIncrement()
+    private void CalculateSum()
     {
-        Counter++;
+        Sum = Calculator.Sum(NumberA, NumberB);
     }
 }

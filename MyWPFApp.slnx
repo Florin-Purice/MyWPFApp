@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="MyWPFApp.Tests/MyWPFApp.Tests.csproj" Id="0431ac85-b497-44f2-9241-3d1dc979bb77" />
   <Project Path="MyWPFApp/MyWPFApp.csproj" />
 </Solution>

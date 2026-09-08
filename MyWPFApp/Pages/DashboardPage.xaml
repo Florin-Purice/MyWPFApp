@@ -13,18 +13,47 @@
       ui:Design.Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
       mc:Ignorable="d">
-    <Grid VerticalAlignment="Top">
+    <Grid VerticalAlignment="Center"
+          HorizontalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        <ui:Button Grid.Column="0"
-                   Command="{Binding ViewModel.CounterIncrementCommand, Mode=OneWay}"
-                   Content="Click me!"
-                   Icon="Fluent24" />
-        <TextBlock Grid.Column="1"
+        <TextBlock Grid.Row="0"
+                   Grid.Column="0"
+                   Text="Number A:" />
+        <ui:NumberBox Grid.Row="0"
+                      Grid.Column="1"
+                      Width="200"
+                      Margin="12,0,0,0"
+                      Value="{Binding ViewModel.NumberA}" />
+        <TextBlock Grid.Row="1"
+                   Grid.Column="0"
+                   Text="Number B:" />
+        <ui:NumberBox Grid.Row="1"
+                      Grid.Column="1"
+                      Width="200"
+                      Margin="12,0,0,0"
+                      Value="{Binding ViewModel.NumberB}" />
+        <TextBlock Grid.Row="2"
+                   Grid.Column="0"
+                   Text="Sum:" />
+        <TextBlock Grid.Row="2"
+                   Grid.Column="1"
+                   Width="200"
                    Margin="12,0,0,0"
-                   VerticalAlignment="Center"
-                   Text="{Binding ViewModel.Counter, Mode=OneWay}" />
+                   Text="{Binding ViewModel.Sum}" />
+        <ui:Button Grid.Row="3"
+                   Grid.Column="0"
+                   Grid.ColumnSpan="2"
+                   Command="{Binding ViewModel.CalculateSumCommand, Mode=OneWay}"
+                   Content="Calculate Sum"
+                   Icon="Fluent24" />
     </Grid>
 </Page>
