@@ -33,7 +33,7 @@ jobs:
         dotnet-version: 10.x
 
     - name: Restore
-      run: dotnet Restore
+      run: dotnet restore
 
     - name: Build
       run: dotnet build -c Release --no-restore
