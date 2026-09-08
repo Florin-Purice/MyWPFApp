@@ -1,0 +1,67 @@
+name: Test
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+
+  build:
+    runs-on: windows-latest  # For a list of available runner types, refer to
+                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+
+    env:
+      Solution_Name: MyWPFApp.slnx
+      Test_Project_Path: MyWPFApp.Tests/MyWPFApp.Tests.csproj
+      Wap_Project_Directory: MyWPFApp
+      Wap_Project_Path: MyWPFApp/MyWPFApp.csproj
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v6
+      with:
+        dotnet-version: 10.x
+
+    - name: Restore
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build -c Release --no-restore
+
+    - name: Publish
+      run: dotnet publish -c Release --no-self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --no-build -o ./publish
+
+    - name: Zip publish
+      uses: montudor/action-zip@v1
+      with:
+        args: zip -qq -r ./MyWPFApp_win-x64.zip ./publish
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env: 
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: MyWPFApp ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./MyWPFApp_win-x64.zip
+        asset_name: MyWPFApp_win-x64.zip
+        asset_content_type: application/zip
+      
