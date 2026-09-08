@@ -30,13 +30,13 @@ jobs:
         dotnet-version: 10.x
 
     - name: Restore
-      run: dotnet restore
+      run: dotnet restore ${{ env.Test_Project_Path }}
 
     - name: Build
-      run: dotnet build -c Release --no-restore
+      run: dotnet build ${{ env.Test_Project_Path }} -c Release --no-restore
 
     - name: Publish
-      run: dotnet publish -c Release --no-self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --no-build
+      run: dotnet publish ${{ env.Test_Project_Path }} -c Release --no-self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --no-build
 
     - name: Zip publish
       uses: montudor/action-zip@v1
