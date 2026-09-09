@@ -12,17 +12,15 @@ defaults:
   run:
     shell: pwsh
 
+env:
+  Solution_Name: MyWPFApp.slnx
+  Test_Project_Path: MyWPFApp.Tests/MyWPFApp.Tests.csproj
+  Wap_Project_Directory: MyWPFApp
+  Wap_Project_Path: MyWPFApp/MyWPFApp.csproj
+
 jobs:
-
-  build:
-    runs-on: windows-latest  # For a list of available runner types, refer to
-                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
-
-    env:
-      Solution_Name: MyWPFApp.slnx
-      Test_Project_Path: MyWPFApp.Tests/MyWPFApp.Tests.csproj
-      Wap_Project_Directory: MyWPFApp
-      Wap_Project_Path: MyWPFApp/MyWPFApp.csproj
+  deploy:
+    runs-on: windows-latest
 
     steps:
     - name: Checkout
@@ -66,7 +64,7 @@ jobs:
     - name: Restore
       run: dotnet restore ${{ env.Wap_Project_Path }} -r win-x64 -p:SelfContained=true
 
-    - name: Build
+    - name: Build SelfContained
       run: dotnet build ${{ env.Wap_Project_Path }} -c Release --self-contained -r win-x64 --no-restore
 
     - name: Publish SelfContained
@@ -87,6 +85,7 @@ jobs:
         name: MyWPFApp ${{ github.ref_name }}
         draft: false
         prerelease: false
+        generate_release_notes: true
         files: |
           MyWPFApp_net10_win-x64.zip
           MyWPFApp_standalone_win-x64.zip
