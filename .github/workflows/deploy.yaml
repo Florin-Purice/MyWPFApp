@@ -64,33 +64,12 @@ jobs:
       run: Compress-Archive -Path "./MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*.exe" -DestinationPath ./MyWPFApp_standalone_win-x64.zip
 
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env: 
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v3
       with:
         tag_name: ${{ github.ref }}
-        release_name: MyWPFApp ${{ github.ref }}
+        name: MyWPFApp ${{ github.ref }}
         draft: false
         prerelease: false
-
-    - name: Upload Release Asset1
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./MyWPFApp_net10_win-x64.zip
-        asset_name: MyWPFApp_net10_win-x64.zip
-        asset_content_type: application/zip
-
-    - name: Upload Release Asset2
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./MyWPFApp_standalone_win-x64.zip
-        asset_name: MyWPFApp_standalone_win-x64.zip
-        asset_content_type: application/zip
-      
+        files: |
+          MyWPFApp_net10_win-x64.zip
+          MyWPFApp_standalone_win-x64.zip
