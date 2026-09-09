@@ -49,16 +49,16 @@ jobs:
       run: Compress-Archive -Path "./MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*.exe" -DestinationPath ./MyWPFApp_net10_win-x64.zip
 
     - name: Remove directory
-      run: Remove-Item -Recurse -Force "./MyWPFApp/bin/Release/net10.0-windows/win-x64/publish"
+      run: Remove-Item -Recurse -Force "./MyWPFApp/bin"
 
     - name: Clean
-      run: dotnet clean
+      run: dotnet clean -c Release
 
     - name: Build SelfContained
       run: dotnet build ${{ env.Wap_Project_Path }} -c Release --no-restore
 
     - name: Publish SelfContained
-      run: dotnet publish ${{ env.Wap_Project_Path }} -c Release --self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=true -p:DebugType=none
+      run: dotnet publish ${{ env.Wap_Project_Path }} -c Release --self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishReadyToRun=true -p:DebugType=none --no-build
 
     - name: Zip SelfContained
       run: Compress-Archive -Path "./MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*.exe" -DestinationPath ./MyWPFApp_standalone_win-x64.zip
@@ -66,8 +66,7 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v3
       with:
-        tag_name: ${{ github.ref }}
-        name: MyWPFApp ${{ github.ref }}
+        name: MyWPFApp ${{ github.ref_name }}
         draft: false
         prerelease: false
         files: |
