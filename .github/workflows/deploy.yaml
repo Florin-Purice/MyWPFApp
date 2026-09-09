@@ -67,7 +67,7 @@ jobs:
       run: dotnet restore ${{ env.Wap_Project_Path }} -r win-x64 -p:SelfContained=true
 
     - name: Build
-      run: dotnet build ${{ env.Wap_Project_Path }} -c Release -r win-x64 --no-restore
+      run: dotnet build ${{ env.Wap_Project_Path }} -c Release --self-contained -r win-x64 --no-restore
 
     - name: Publish SelfContained
       run: dotnet publish ${{ env.Wap_Project_Path }} -c Release --self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --no-build
