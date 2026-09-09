@@ -8,11 +8,15 @@ on:
   pull_request:
     branches: [ "master" ]
 
-jobs:
+env:
+  Solution_Name: MyWPFApp.slnx
+  Test_Project_Path: MyWPFApp.Tests/MyWPFApp.Tests.csproj
+  Wap_Project_Directory: MyWPFApp
+  Wap_Project_Path: MyWPFApp/MyWPFApp.csproj
 
-  build:
-    runs-on: windows-latest  # For a list of available runner types, refer to
-                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+jobs:
+  test:
+    runs-on: windows-latest
 
     env:
       Solution_Name: MyWPFApp.slnx
