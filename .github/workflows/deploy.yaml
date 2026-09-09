@@ -37,7 +37,7 @@ jobs:
         dotnet-version: 10.x
 
     - name: Restore
-      run: dotnet restore ${{ env.Wap_Project_Path }}
+      run: dotnet restore ${{ env.Wap_Project_Path }} -r win-x64
 
     - name: Build
       run: dotnet build ${{ env.Wap_Project_Path }} -c Release --no-restore
@@ -61,7 +61,7 @@ jobs:
       run: dotnet clean -c Release
 
     - name: Restore SelfContained
-      run: dotnet restore ${{ env.Wap_Project_Path }} -p:SelfContained=true
+      run: dotnet restore ${{ env.Wap_Project_Path }} -r win-x64 -p:SelfContained=true
 
     - name: Build SelfContained
       run: dotnet build ${{ env.Wap_Project_Path }} -c Release --no-restore
