@@ -54,8 +54,9 @@ jobs:
     - name: Zip
       run: Compress-Archive -Path "./My WPF App" -DestinationPath ./MyWPFApp_net10_win-x64.zip
 
-    - name: Remove publish directory
+    - name: Remove publish directory and bin directory
       run: Remove-Item -Recurse -Force "./My WPF App"
+      run: Remove-Item -Recurse -Force "./MyWPFApp/bin"
 
     - name: Clean
       run: dotnet clean -c Release
