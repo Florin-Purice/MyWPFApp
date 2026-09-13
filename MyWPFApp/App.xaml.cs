@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MyWPFApp.Pages;
 using MyWPFApp.Services;
 using MyWPFApp.Windows;
 using System.IO;
 using System.Windows.Threading;
+using Velopack;
 using Wpf.Ui;
 using Wpf.Ui.DependencyInjection;
-using MyWPFApp.Pages;
 
 namespace MyWPFApp;
 
@@ -64,7 +65,9 @@ public partial class App
     /// </summary>
     private async void OnStartup(object sender, StartupEventArgs e)
     {
+        VelopackApp.Build().Run();
         await _host.StartAsync();
+        await UpdateMyApp();
     }
 
     /// <summary>
@@ -83,5 +86,28 @@ public partial class App
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         // For more info see https://docs.microsoft.com/en-us/dotnet/api/system.windows.application.dispatcherunhandledexception?view=windowsdesktop-6.0
+    }
+
+    private static async Task UpdateMyApp()
+    {
+#if !DEBUG
+        var mgr = new UpdateManager(@"D:\TestDeploy");
+
+        // check for new version
+        var newVersion = await mgr.CheckForUpdatesAsync();
+        if (newVersion == null)
+            return; // no update available
+
+        // ask for update confirmation
+        MessageBoxResult mbResult = MessageBox.Show("New version found. Update now?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Information);
+        if (mbResult == MessageBoxResult.Yes)
+        {
+            // download new version
+            await mgr.DownloadUpdatesAsync(newVersion);
+
+            // install new version and restart app
+            mgr.ApplyUpdatesAndRestart(newVersion);
+        }
+#endif
     }
 }
