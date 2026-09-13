@@ -22,7 +22,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v7
       with:
-        fetch-depth: 0
+        fetch-depth: 0      
+        
+    - name: Get Version from Project File
+      id: get-version
+      shell: bash
+      run: echo "version=$(grep -oE '<Version>[^<]+' MyWPFApp.csproj | sed 's/<Version>//')" >> $GITHUB_OUTPUT
 
     # Install the .NET Core workload
     - name: Install .NET Core
