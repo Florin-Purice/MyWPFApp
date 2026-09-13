@@ -2,8 +2,7 @@ name: Deploy
 
 on:
   push:
-    tags:
-      - "*"
+    branches: [releases]
 
 permissions:
   contents: write   
@@ -12,15 +11,12 @@ defaults:
   run:
     shell: pwsh
 
-env:
-  Solution_Name: MyWPFApp.slnx
-  Test_Project_Path: MyWPFApp.Tests/MyWPFApp.Tests.csproj
-  Wap_Project_Directory: MyWPFApp
-  Wap_Project_Path: MyWPFApp/MyWPFApp.csproj
-
 jobs:
   deploy:
     runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ./MyWPFApp
 
     steps:
     - name: Checkout
@@ -34,58 +30,12 @@ jobs:
       with:
         dotnet-version: 10.x
 
-    - name: Restore
-      run: dotnet restore ${{ env.Wap_Project_Path }} -r win-x64 -p:SelfContained=true
-
-    - name: Build
-      run: dotnet build ${{ env.Wap_Project_Path }} -c Release -r win-x64 --no-restore
-
     - name: Publish
-      run: dotnet publish ${{ env.Wap_Project_Path }} -c Release --no-self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --no-build
+      run: dotnet publish -c Release --self-contained -r win-x64 -o .\publish
 
-    - name: Remove .pdb files from publish folder
-      run: Remove-Item -Path "./MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*" -Include "*.pdb" -Recurse -Force
-
-    - name: Rename publish folder
-      run: Move-Item -Path "./MyWPFApp/bin/Release/net10.0-windows/win-x64/publish" -Destination "./My WPF App"
-
-    - name: Zip
-      run: Compress-Archive -Path "./My WPF App" -DestinationPath ./MyWPFApp_net10_win-x64.zip
-
-    - name: Remove publish directory
-      run: Remove-Item -Recurse -Force "./My WPF App"
-
-    - name: Remove bin directory
-      run: Remove-Item -Recurse -Force "./MyWPFApp/bin"
-
-    - name: Clean
-      run: dotnet clean -c Release
-
-    - name: Restore
-      run: dotnet restore ${{ env.Wap_Project_Path }} -r win-x64 -p:SelfContained=true
-
-    - name: Build SelfContained
-      run: dotnet build ${{ env.Wap_Project_Path }} -c Release --self-contained -r win-x64 --no-restore
-
-    - name: Publish SelfContained
-      run: dotnet publish ${{ env.Wap_Project_Path }} -c Release --self-contained -r win-x64 -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none --no-build
-
-    - name: Remove .pdb files from publish folder
-      run: Remove-Item -Path "./MyWPFApp/bin/Release/net10.0-windows/win-x64/publish/*" -Include "*.pdb" -Recurse -Force
-
-    - name: Rename publish folder
-      run: Move-Item -Path "./MyWPFApp/bin/Release/net10.0-windows/win-x64/publish" -Destination "./My WPF App"
-
-    - name: Zip SelfContained
-      run: Compress-Archive -Path "./My WPF App" -DestinationPath ./MyWPFApp_standalone_win-x64.zip
-
-    - name: Create Release
-      uses: softprops/action-gh-release@v3
-      with:
-        name: MyWPFApp ${{ github.ref_name }}
-        draft: false
-        prerelease: false
-        generate_release_notes: true
-        files: |
-          MyWPFApp_net10_win-x64.zip
-          MyWPFApp_standalone_win-x64.zip
+    - name: Create Velopack Release
+      run: |
+        dotnet tool install -g vpk
+        vpk download github --repoUrl https://github.com/${{ github.repository }}
+        vpk pack -u MyWPFApp -v ${{ steps.get-version.outputs.version }} -p publish --packTitle "My WPF App" --mainExe MyWPFApp.exe
+        vpk upload github --repoUrl https://github.com/${{ github.repository }} --publish --releaseName "MyWPFApp ${{ steps.get-version.outputs.version }}" --tag ${{ steps.get-version.outputs.version }}
