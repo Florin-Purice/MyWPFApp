@@ -41,6 +41,6 @@ jobs:
     - name: Create Velopack Release
       run: |
         dotnet tool install -g vpk
-        vpk download github --repoUrl https://github.com/${{ github.repository }}
+        vpk download github --repoUrl https://github.com/${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }}
         vpk pack -u MyWPFApp -v ${{ steps.get-version.outputs.version }} -p publish --packTitle "My WPF App" --mainExe MyWPFApp.exe
-        vpk upload github --repoUrl https://github.com/${{ github.repository }} --publish --releaseName "MyWPFApp ${{ steps.get-version.outputs.version }}" --tag ${{ steps.get-version.outputs.version }}
+        vpk upload github --repoUrl https://github.com/${{ github.repository }} --publish --releaseName "MyWPFApp ${{ steps.get-version.outputs.version }}" --tag ${{ steps.get-version.outputs.version }} --token ${{ secrets.GITHUB_TOKEN }}
