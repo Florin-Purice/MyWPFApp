@@ -7,6 +7,7 @@ using MyWPFApp.Windows;
 using System.IO;
 using System.Windows.Threading;
 using Velopack;
+using Velopack.Sources;
 using Wpf.Ui;
 using Wpf.Ui.DependencyInjection;
 
@@ -91,10 +92,11 @@ public partial class App
     private static async Task UpdateMyApp()
     {
 #if !DEBUG
-        var mgr = new UpdateManager(@"D:\TestDeploy");
+        IUpdateSource updateSource = new GithubSource("https://github.com/Florin-Purice/MyWPFApp", accessToken: null, prerelease: false);
+        UpdateManager mgr = new(updateSource);
 
         // check for new version
-        var newVersion = await mgr.CheckForUpdatesAsync();
+        UpdateInfo? newVersion = await mgr.CheckForUpdatesAsync();
         if (newVersion == null)
             return; // no update available
 
