@@ -8,6 +8,9 @@ using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using MessageBox = System.Windows.MessageBox;
+using MessageBoxButton = System.Windows.MessageBoxButton;
+using MessageBoxResult = System.Windows.MessageBoxResult;
 using SplashScreen = MyWPFApp.Controls.SplashScreen;
 
 namespace MyWPFApp.Windows;
@@ -64,8 +67,8 @@ public partial class MainWindow : INavigationWindow
         {
             // ffmpeg was not found
             // ask for download confirmation
-            System.Windows.MessageBoxResult mbResult = System.Windows.MessageBox.Show("FFMpeg not found. Install ffmpeg?", "Confirmation", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Information);
-            if (mbResult == System.Windows.MessageBoxResult.Yes)
+            MessageBoxResult mbResult = MessageBox.Show("FFMpeg not found. Install ffmpeg?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Information);
+            if (mbResult == MessageBoxResult.Yes)
             {
                 try
                 {
