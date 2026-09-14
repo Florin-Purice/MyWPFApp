@@ -101,7 +101,7 @@ public partial class MainWindow : INavigationWindow
         UpdateManager mgr = new(updateSource);
 
         // check for new version
-        UpdateInfo? newVersion = await mgr.CheckForUpdatesAsync();newVersion.TargetFullRelease.Version.ToFullString();
+        UpdateInfo? newVersion = await mgr.CheckForUpdatesAsync();
         if (newVersion == null)
             return; // no update available
 
