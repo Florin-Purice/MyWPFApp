@@ -63,7 +63,12 @@ public partial class MainWindow : INavigationWindow
         // check if ffmpeg is installed
         try
         {
-            FFMpegHelper.VerifyFFMpegExists(GlobalFFOptions.Current);
+            string binaryPath = GlobalFFOptions.GetFFMpegBinaryPath();
+
+            bool exists = File.Exists(binaryPath)
+                || binaryPath == "ffmpeg"
+                || binaryPath == "ffmpeg.exe";
+            MessageBox.Show($"binary path = {binaryPath}, exists {exists}");
         }
         catch (FFMpegException)
         {

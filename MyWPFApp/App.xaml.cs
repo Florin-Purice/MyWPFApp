@@ -69,7 +69,6 @@ public partial class App
     {
         VelopackApp.Build().Run();
         await _host.StartAsync();
-        GlobalFFOptions.Configure(o => o.BinaryFolder = "../ffmpeg_bin");
     }
 
     /// <summary>
