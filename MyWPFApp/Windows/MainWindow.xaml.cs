@@ -44,16 +44,10 @@ public partial class MainWindow : INavigationWindow
 
     private void InitializeSplashScreen()
     {
-        List<SplashScreenTask> tasks =
+        List<Func<Action<string>, Task>> tasks =
         [
-            new SplashScreenTask(
-                "Checking for updates",
-                UpdateMyApp
-                ),
-            new SplashScreenTask(
-                "Verifying ffmpeg install",
-                CheckFFMpegInstall
-                )
+            UpdateMyApp,
+            CheckFFMpegInstall
         ];
         SplashScreen splashScreen = new(tasks);
         SplashScreenHost.Content = splashScreen;
@@ -62,10 +56,10 @@ public partial class MainWindow : INavigationWindow
 
     private static async Task CheckFFMpegInstall(Action<string> messageChangeCallback)
     {
+        messageChangeCallback("Checking if ffmpeg is installed");
         try
         {
             FFMpegHelper.VerifyFFMpegExists(GlobalFFOptions.Current);
-            throw new Exception();
         }
         catch
         {
@@ -102,18 +96,21 @@ public partial class MainWindow : INavigationWindow
     private static async Task UpdateMyApp(Action<string> messageChangeCallback)
     {
 #if !DEBUG
+        messageChangeCallback("Checking for updates");
         IUpdateSource updateSource = new GithubSource("https://github.com/Florin-Purice/MyWPFApp", accessToken: null, prerelease: false);
         UpdateManager mgr = new(updateSource);
 
         // check for new version
-        UpdateInfo? newVersion = await mgr.CheckForUpdatesAsync();
+        UpdateInfo? newVersion = await mgr.CheckForUpdatesAsync();newVersion.TargetFullRelease.Version.ToFullString();
         if (newVersion == null)
             return; // no update available
 
+        messageChangeCallback($"Update found: {newVersion.TargetFullRelease.Version.ToFullString()}");
         // ask for update confirmation
         MessageBoxResult mbResult = MessageBox.Show("New version found. Update now?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Information);
         if (mbResult == MessageBoxResult.Yes)
         {
+            messageChangeCallback("Downloading update");
             // download new version
             await mgr.DownloadUpdatesAsync(newVersion);
 

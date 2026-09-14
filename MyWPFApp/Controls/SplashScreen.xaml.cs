@@ -7,11 +7,11 @@ namespace MyWPFApp.Controls;
 /// </summary>
 public partial class SplashScreen : UserControl
 {
-    private List<SplashScreenTask> _tasks;
+    private readonly List<Func<Action<string>, Task>> _tasks;
 
-    public SplashScreen(List<SplashScreenTask> tasks)
+    public SplashScreen(List<Func<Action<string>, Task>> taskWithMessageUpdateCallbackList)
     {
-        _tasks = tasks;
+        _tasks = taskWithMessageUpdateCallbackList;
         ViewModel = new SplashScreenViewModel();
         DataContext = this;
         InitializeComponent();
@@ -21,11 +21,8 @@ public partial class SplashScreen : UserControl
 
     public async Task RunTasksAndHideAsync()
     {
-        foreach (SplashScreenTask sstask in _tasks)
-        {
-            ViewModel.Message = sstask.Message;
-            await sstask.Operation.Invoke(UpdateMessage);
-        }
+        foreach (Func<Action<string>, Task> task in _tasks)
+            await task.Invoke(UpdateMessage);
         Collapse();
     }
 
@@ -39,5 +36,3 @@ public partial class SplashScreen : UserControl
         Dispatcher?.Invoke(() => Visibility = Visibility.Collapsed);
     }
 }
-
-public record class SplashScreenTask(string Message, Func<Action<string>, Task> Operation);
