@@ -36,7 +36,7 @@ public partial class MainWindow : INavigationWindow
         SetPageService(navigationViewPageProvider);
 
         navigationService.SetNavigationControl(RootNavigation);
-
+        GlobalFFOptions.Current.BinaryFolder = @"..\ffbin";
         InitializeSplashScreen();
     }
 
@@ -60,17 +60,15 @@ public partial class MainWindow : INavigationWindow
 
     private static async Task CheckFFMpegInstall()
     {
-        // check if ffmpeg is installed
+        string binaryPath = GlobalFFOptions.GetFFMpegBinaryPath();
+
+        bool exists = File.Exists(binaryPath);
+        MessageBox.Show($"binary path = {binaryPath}, exists {exists}");
         try
         {
-            string binaryPath = GlobalFFOptions.GetFFMpegBinaryPath();
-
-            bool exists = File.Exists(binaryPath)
-                || binaryPath == "ffmpeg"
-                || binaryPath == "ffmpeg.exe";
-            MessageBox.Show($"binary path = {binaryPath}, exists {exists}");
+            FFMpegHelper.VerifyFFMpegExists(GlobalFFOptions.Current);
         }
-        catch (FFMpegException)
+        catch
         {
             // ffmpeg was not found
             // ask for download confirmation
@@ -93,7 +91,6 @@ public partial class MainWindow : INavigationWindow
             else;
             //App.Current.Shutdown();
         }
-        catch { }
     }
 
     private static async Task UpdateMyApp()
