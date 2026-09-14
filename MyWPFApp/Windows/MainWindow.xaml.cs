@@ -4,6 +4,8 @@ using FFMpegCore.Extensions.Downloader;
 using FFMpegCore.Helpers;
 using MyWPFApp.Controls;
 using System.IO;
+using Velopack;
+using Velopack.Sources;
 using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
