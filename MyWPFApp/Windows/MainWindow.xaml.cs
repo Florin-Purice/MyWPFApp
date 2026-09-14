@@ -5,6 +5,7 @@ using FFMpegCore.Helpers;
 using MyWPFApp.Controls;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection.Metadata;
 using System.Security.Principal;
 using Velopack;
 using Velopack.Sources;
@@ -12,21 +13,21 @@ using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
-using MessageBox = System.Windows.MessageBox;
-using MessageBoxButton = System.Windows.MessageBoxButton;
-using MessageBoxResult = System.Windows.MessageBoxResult;
 using SplashScreen = MyWPFApp.Controls.SplashScreen;
 
 namespace MyWPFApp.Windows;
 
 public partial class MainWindow : INavigationWindow
 {
+    private IContentDialogService _contentDialogService;
+
     public MainWindowViewModel ViewModel { get; }
 
     public MainWindow(
         MainWindowViewModel viewModel,
         INavigationViewPageProvider navigationViewPageProvider,
-        INavigationService navigationService
+        INavigationService navigationService,
+        IContentDialogService contentDialogService
     )
     {
         ViewModel = viewModel;
@@ -38,6 +39,9 @@ public partial class MainWindow : INavigationWindow
         SetPageService(navigationViewPageProvider);
 
         navigationService.SetNavigationControl(RootNavigation);
+        contentDialogService.SetDialogHost(RootContentDialog);
+        _contentDialogService = contentDialogService;
+
         GlobalFFOptions.Current.BinaryFolder = @"..\ffbin";
         InitializeSplashScreen();
     }
@@ -54,7 +58,7 @@ public partial class MainWindow : INavigationWindow
         Task.Run(() => splashScreen.RunTasksAndHideAsync());
     }
 
-    private static async Task CheckFFMpegInstall(Action<string> messageChangeCallback)
+    private async Task CheckFFMpegInstall(Action<string> messageChangeCallback)
     {
         messageChangeCallback("Checking if ffmpeg is installed");
         try
@@ -86,34 +90,52 @@ public partial class MainWindow : INavigationWindow
             }
             else
             {
-                // need admin permission to install
-                _ = MessageBox.Show("This app needs ffmpeg to run. No ffmpeg installation found.\nInstall ffmpeg manually and restart application\nor restart with admin privileges to install automatically.", "FFMpeg install", MessageBoxButton.OK, MessageBoxImage.Information);
+                //need admin permission to install
+                await Application.Current.Dispatcher.Invoke(async () =>
+                {
+                    ContentDialog dialog = new()
+                    {
+                        Title = "FFMpeg not installed",
+                        Content = "This app needs ffmpeg to run.\nInstall ffmpeg manually and restart application.\n\nOr restart with admin privileges to install automatically.",
+                        IsPrimaryButtonEnabled = false,
+                        CloseButtonText = "Exit"
+                    };
+                    _ = await _contentDialogService.ShowAsync(dialog, default);
+                });
                 ShutdownApp();
             }
         }
     }
 
-    private static async Task UpdateMyApp(Action<string> messageChangeCallback)
+    private async Task UpdateMyApp(Action<string> messageChangeCallback)
     {
 #if !DEBUG
         messageChangeCallback("Checking for updates");
         IUpdateSource updateSource = new GithubSource("https://github.com/Florin-Purice/MyWPFApp", accessToken: null, prerelease: false);
         UpdateManager mgr = new(updateSource);
-
         // check for new version
         UpdateInfo? newVersion = await mgr.CheckForUpdatesAsync();
         if (newVersion == null)
             return; // no update available
-
         messageChangeCallback($"Update found: {newVersion.TargetFullRelease.Version.ToFullString()}");
         // ask for update confirmation
-        MessageBoxResult mbResult = MessageBox.Show("New version found. Update now?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Information);
-        if (mbResult == MessageBoxResult.Yes)
+        ContentDialogResult? dialogResult = null;
+        await Application.Current.Dispatcher.Invoke(async () =>
+        {
+            ContentDialog dialog = new()
+            {
+                Title = $"New version: {newVersion.TargetFullRelease.Version.ToFullString()}",
+                Content = "Update available.\n\nWant to download and install now?",
+                PrimaryButtonText = "Yes",
+                CloseButtonText = "Postpone"
+            };
+            dialogResult = await _contentDialogService.ShowAsync(dialog, default);
+        });
+        if (dialogResult == ContentDialogResult.Primary)
         {
             messageChangeCallback("Downloading update");
             // download new version
             await mgr.DownloadUpdatesAsync(newVersion);
-
             // install new version and restart app
             mgr.ApplyUpdatesAndRestart(newVersion);
         }

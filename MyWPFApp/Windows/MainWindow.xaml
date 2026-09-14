@@ -45,6 +45,8 @@
                 </Grid>
             </ui:NavigationView.ContentOverlay>
         </ui:NavigationView>
+        <ContentPresenter Grid.Row="1"
+                          x:Name="SplashScreenHost" />
         <ui:ContentDialogHost x:Name="RootContentDialog"
                               Grid.Row="0"
                               Grid.RowSpan="2" />
@@ -56,7 +58,5 @@
                 <ui:ImageIcon Source="pack://application:,,,/Assets/wpfui-icon-256.png" />
             </ui:TitleBar.Icon>
         </ui:TitleBar>
-        <ContentPresenter Grid.Row="1" 
-                          x:Name="SplashScreenHost"/>
     </Grid>
 </ui:FluentWindow>

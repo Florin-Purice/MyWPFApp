@@ -33,6 +33,8 @@ public partial class App
 
             services.AddHostedService<ApplicationHostService>();
 
+            services.AddSingleton<IContentDialogService, ContentDialogService>();
+
             // Theme manipulation
             services.AddSingleton<IThemeService, ThemeService>();
 
