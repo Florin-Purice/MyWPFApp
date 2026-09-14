@@ -2,27 +2,15 @@ name: Test
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [develop]
     paths-ignore:
       - 'README.md'
   pull_request:
-    branches: [ "master" ]
-
-env:
-  Solution_Name: MyWPFApp.slnx
-  Test_Project_Path: MyWPFApp.Tests/MyWPFApp.Tests.csproj
-  Wap_Project_Directory: MyWPFApp
-  Wap_Project_Path: MyWPFApp/MyWPFApp.csproj
+    branches: [develop]
 
 jobs:
   test:
     runs-on: windows-latest
-
-    env:
-      Solution_Name: MyWPFApp.slnx
-      Test_Project_Path: MyWPFApp.Tests/MyWPFApp.Tests.csproj
-      Wap_Project_Directory: MyWPFApp
-      Wap_Project_Path: MyWPFApp/MyWPFApp.csproj
 
     steps:
     - name: Checkout
