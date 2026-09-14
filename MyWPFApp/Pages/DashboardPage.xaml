@@ -20,6 +20,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -52,8 +53,14 @@
         <ui:Button Grid.Row="3"
                    Grid.Column="0"
                    Grid.ColumnSpan="2"
-                   Command="{Binding ViewModel.CalculateSumCommand, Mode=OneWay}"
+                   Command="{Binding ViewModel.CalculateSumCommand}"
                    Content="Calculate Sum"
+                   Icon="Fluent24" />
+        <ui:Button Grid.Row="4"
+                   Grid.Column="0"
+                   Grid.ColumnSpan="2"
+                   Command="{Binding ViewModel.AnalyzeMediaCommand}"
+                   Content="Analyze media"
                    Icon="Fluent24" />
     </Grid>
 </Page>

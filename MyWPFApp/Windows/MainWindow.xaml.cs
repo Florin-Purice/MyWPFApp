@@ -1,7 +1,14 @@
-﻿using Wpf.Ui;
+﻿using FFMpegCore;
+using FFMpegCore.Exceptions;
+using FFMpegCore.Extensions.Downloader;
+using FFMpegCore.Helpers;
+using MyWPFApp.Controls;
+using System.IO;
+using Wpf.Ui;
 using Wpf.Ui.Abstractions;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
+using SplashScreen = MyWPFApp.Controls.SplashScreen;
 
 namespace MyWPFApp.Windows;
 
@@ -24,6 +31,83 @@ public partial class MainWindow : INavigationWindow
         SetPageService(navigationViewPageProvider);
 
         navigationService.SetNavigationControl(RootNavigation);
+
+        InitializeSplashScreen();
+    }
+
+    private void InitializeSplashScreen()
+    {
+        List<SplashScreenTask> tasks =
+        [
+            new SplashScreenTask(
+                "Checking for updates...",
+                UpdateMyApp
+                ),
+            new SplashScreenTask(
+                "Verifying ffmpeg install...",
+                CheckFFMpegInstall
+                )
+        ];
+        SplashScreen splashScreen = new(tasks);
+        SplashScreenHost.Content = splashScreen;
+        Task.Run(() => splashScreen.RunTasksAndHideAsync());
+    }
+
+    private static async Task CheckFFMpegInstall()
+    {
+        // check if ffmpeg is installed
+        try
+        {
+            FFMpegHelper.VerifyFFMpegExists(GlobalFFOptions.Current);
+        }
+        catch (FFMpegException)
+        {
+            // ffmpeg was not found
+            // ask for download confirmation
+            System.Windows.MessageBoxResult mbResult = System.Windows.MessageBox.Show("FFMpeg not found. Install ffmpeg?", "Confirmation", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Information);
+            if (mbResult == System.Windows.MessageBoxResult.Yes)
+            {
+                try
+                {
+                    // create bin folder
+                    string dirPath = GlobalFFOptions.Current.BinaryFolder;
+                    Directory.CreateDirectory(dirPath);
+                    // download ffmpeg binaries
+                    List<string> downloaded = await FFMpegDownloader.DownloadBinaries();
+                }
+                catch
+                {
+                    //App.Current.Shutdown();
+                }
+            }
+            else;
+            //App.Current.Shutdown();
+        }
+        catch { }
+    }
+
+    private static async Task UpdateMyApp()
+    {
+#if !DEBUG
+        IUpdateSource updateSource = new GithubSource("https://github.com/Florin-Purice/MyWPFApp", accessToken: null, prerelease: false);
+        UpdateManager mgr = new(updateSource);
+
+        // check for new version
+        UpdateInfo? newVersion = await mgr.CheckForUpdatesAsync();
+        if (newVersion == null)
+            return; // no update available
+
+        // ask for update confirmation
+        MessageBoxResult mbResult = MessageBox.Show("New version found. Update now?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Information);
+        if (mbResult == MessageBoxResult.Yes)
+        {
+            // download new version
+            await mgr.DownloadUpdatesAsync(newVersion);
+
+            // install new version and restart app
+            mgr.ApplyUpdatesAndRestart(newVersion);
+        }
+#endif
     }
 
     #region INavigationWindow methods

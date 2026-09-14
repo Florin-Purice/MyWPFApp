@@ -3,6 +3,7 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                  xmlns:local="clr-namespace:MyWPFApp.Windows"
+                 xmlns:controls="clr-namespace:MyWPFApp.Controls"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  Title="{Binding ViewModel.ApplicationTitle, Mode=OneWay}"
@@ -55,5 +56,7 @@
                 <ui:ImageIcon Source="pack://application:,,,/Assets/wpfui-icon-256.png" />
             </ui:TitleBar.Icon>
         </ui:TitleBar>
+        <ContentPresenter Grid.Row="1" 
+                          x:Name="SplashScreenHost"/>
     </Grid>
 </ui:FluentWindow>

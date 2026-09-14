@@ -1,4 +1,6 @@
-﻿using MyWPFApp.Models;
+﻿using FFMpegCore;
+using Microsoft.Win32;
+using MyWPFApp.Models;
 
 namespace MyWPFApp.Pages;
 
@@ -15,5 +17,21 @@ public partial class DashboardViewModel : ObservableObject
     private void CalculateSum()
     {
         Sum = Calculator.Sum(NumberA, NumberB);
+    }
+
+    [RelayCommand]
+    private async Task AnalyzeMedia()
+    {
+        OpenFileDialog ofd = new();
+        if(ofd.ShowDialog() == true)
+        {
+            try
+            {
+                IMediaAnalysis ma = await FFProbe.AnalyseAsync(ofd.FileName);
+                MessageBox.Show("ffprobe test ok");
+            }
+            catch
+            { }
+        }
     }
 }
