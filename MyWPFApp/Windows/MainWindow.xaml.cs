@@ -3,7 +3,9 @@ using FFMpegCore.Exceptions;
 using FFMpegCore.Extensions.Downloader;
 using FFMpegCore.Helpers;
 using MyWPFApp.Controls;
+using System.Diagnostics;
 using System.IO;
+using System.Security.Principal;
 using Velopack;
 using Velopack.Sources;
 using Wpf.Ui;
@@ -45,11 +47,11 @@ public partial class MainWindow : INavigationWindow
         List<SplashScreenTask> tasks =
         [
             new SplashScreenTask(
-                "Checking for updates...",
+                "Checking for updates",
                 UpdateMyApp
                 ),
             new SplashScreenTask(
-                "Verifying ffmpeg install...",
+                "Verifying ffmpeg install",
                 CheckFFMpegInstall
                 )
         ];
@@ -58,25 +60,22 @@ public partial class MainWindow : INavigationWindow
         Task.Run(() => splashScreen.RunTasksAndHideAsync());
     }
 
-    private static async Task CheckFFMpegInstall()
+    private static async Task CheckFFMpegInstall(Action<string> messageChangeCallback)
     {
-        string binaryPath = GlobalFFOptions.GetFFMpegBinaryPath();
-
-        bool exists = File.Exists(binaryPath);
-        MessageBox.Show($"binary path = {binaryPath}, exists {exists}");
         try
         {
             FFMpegHelper.VerifyFFMpegExists(GlobalFFOptions.Current);
+            throw new Exception();
         }
         catch
         {
+            messageChangeCallback("ffmpeg not found");
             // ffmpeg was not found
-            // ask for download confirmation
-            MessageBoxResult mbResult = MessageBox.Show("FFMpeg not found. Install ffmpeg?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Information);
-            if (mbResult == MessageBoxResult.Yes)
+            if (IsAdministrator())
             {
                 try
                 {
+                    messageChangeCallback("Downloading ffmpeg binaries");
                     // create bin folder
                     string dirPath = GlobalFFOptions.Current.BinaryFolder;
                     Directory.CreateDirectory(dirPath);
@@ -85,15 +84,22 @@ public partial class MainWindow : INavigationWindow
                 }
                 catch
                 {
-                    //App.Current.Shutdown();
+                    // could not install
+                    messageChangeCallback("An error occured while trying to download ffmpeg. Exiting");
+                    await Task.Delay(2000);
+                    ShutdownApp();
                 }
             }
-            else;
-            //App.Current.Shutdown();
+            else
+            {
+                // need admin permission to install
+                _ = MessageBox.Show("This app needs ffmpeg to run. No ffmpeg installation found.\nInstall ffmpeg manually and restart application\nor restart with admin privileges to install automatically.", "FFMpeg install", MessageBoxButton.OK, MessageBoxImage.Information);
+                ShutdownApp();
+            }
         }
     }
 
-    private static async Task UpdateMyApp()
+    private static async Task UpdateMyApp(Action<string> messageChangeCallback)
     {
 #if !DEBUG
         IUpdateSource updateSource = new GithubSource("https://github.com/Florin-Purice/MyWPFApp", accessToken: null, prerelease: false);
@@ -115,6 +121,18 @@ public partial class MainWindow : INavigationWindow
             mgr.ApplyUpdatesAndRestart(newVersion);
         }
 #endif
+    }
+
+    static bool IsAdministrator()
+    {
+        using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+        WindowsPrincipal principal = new(identity);
+        return principal.IsInRole(WindowsBuiltInRole.Administrator);
+    }
+
+    static void ShutdownApp()
+    {
+        Application.Current.Dispatcher.Invoke(() => Application.Current.Shutdown());
     }
 
     #region INavigationWindow methods

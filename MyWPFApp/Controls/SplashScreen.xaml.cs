@@ -24,9 +24,14 @@ public partial class SplashScreen : UserControl
         foreach (SplashScreenTask sstask in _tasks)
         {
             ViewModel.Message = sstask.Message;
-            await sstask.Operation.Invoke();
+            await sstask.Operation.Invoke(UpdateMessage);
         }
         Collapse();
+    }
+
+    private void UpdateMessage(string newMessage)
+    {
+        ViewModel.Message = newMessage;
     }
 
     private void Collapse()
@@ -35,4 +40,4 @@ public partial class SplashScreen : UserControl
     }
 }
 
-public record class SplashScreenTask(string Message, Func<Task> Operation);
+public record class SplashScreenTask(string Message, Func<Action<string>, Task> Operation);
