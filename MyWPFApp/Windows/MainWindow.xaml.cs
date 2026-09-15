@@ -114,7 +114,12 @@ public partial class MainWindow : INavigationWindow
         IUpdateSource updateSource = new GithubSource("https://github.com/Florin-Purice/MyWPFApp", accessToken: null, prerelease: false);
         UpdateManager mgr = new(updateSource);
         // check for new version
-        UpdateInfo? newVersion = await mgr.CheckForUpdatesAsync();
+        Task<UpdateInfo?> checkTask = mgr.CheckForUpdatesAsync();
+        Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(10));
+        Task completed = await Task.WhenAny(checkTask, timeoutTask);
+        if (completed == timeoutTask)
+            return; // Timed out
+        UpdateInfo? newVersion = await checkTask;
         if (newVersion == null)
             return; // no update available
         messageChangeCallback($"Update found: {newVersion.TargetFullRelease.Version.ToFullString()}");
