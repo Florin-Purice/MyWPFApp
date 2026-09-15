@@ -1,11 +1,7 @@
 ﻿using FFMpegCore;
-using FFMpegCore.Exceptions;
 using FFMpegCore.Extensions.Downloader;
 using FFMpegCore.Helpers;
-using MyWPFApp.Controls;
-using System.Diagnostics;
 using System.IO;
-using System.Reflection.Metadata;
 using System.Security.Principal;
 using Velopack;
 using Velopack.Sources;
@@ -20,7 +16,7 @@ namespace MyWPFApp.Windows;
 public partial class MainWindow : INavigationWindow
 {
     private IContentDialogService _contentDialogService;
-
+    
     public MainWindowViewModel ViewModel { get; }
 
     public MainWindow(
@@ -109,7 +105,7 @@ public partial class MainWindow : INavigationWindow
 
     private async Task UpdateMyApp(Action<string> messageChangeCallback)
     {
-#if !DEBUG
+//#if !DEBUG
         messageChangeCallback("Checking for updates");
         IUpdateSource updateSource = new GithubSource("https://github.com/Florin-Purice/MyWPFApp", accessToken: null, prerelease: false);
         UpdateManager mgr = new(updateSource);
@@ -119,6 +115,12 @@ public partial class MainWindow : INavigationWindow
         Task completed = await Task.WhenAny(checkTask, timeoutTask);
         if (completed == timeoutTask)
             return; // Timed out
+        if (completed.IsFaulted)
+        {
+            messageChangeCallback($"Task faulted. Exception: {completed.Exception.Message}");
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            return;
+        }
         UpdateInfo? newVersion = await checkTask;
         if (newVersion == null)
             return; // no update available
@@ -144,7 +146,7 @@ public partial class MainWindow : INavigationWindow
             // install new version and restart app
             mgr.ApplyUpdatesAndRestart(newVersion);
         }
-#endif
+//#endif
     }
 
     static bool IsAdministrator()
