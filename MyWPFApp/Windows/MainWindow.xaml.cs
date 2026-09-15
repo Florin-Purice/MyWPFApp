@@ -74,7 +74,11 @@ public partial class MainWindow : INavigationWindow
                     string dirPath = GlobalFFOptions.Current.BinaryFolder;
                     Directory.CreateDirectory(dirPath);
                     // download ffmpeg binaries
-                    List<string> downloaded = await FFMpegDownloader.DownloadBinaries();
+                    Task<List<string>> downloadTask = FFMpegDownloader.DownloadBinaries();
+                    Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(10));
+                    Task completed = await Task.WhenAny(downloadTask, timeoutTask);
+                    if (completed == timeoutTask || completed.IsFaulted)
+                        throw new Exception("Time out or error when downloading");
                 }
                 catch
                 {
@@ -105,7 +109,6 @@ public partial class MainWindow : INavigationWindow
 
     private async Task UpdateMyApp(Action<string> messageChangeCallback)
     {
-//#if !DEBUG
         messageChangeCallback("Checking for updates");
         IUpdateSource updateSource = new GithubSource("https://github.com/Florin-Purice/MyWPFApp", accessToken: null, prerelease: false);
         UpdateManager mgr = new(updateSource);
@@ -113,14 +116,8 @@ public partial class MainWindow : INavigationWindow
         Task<UpdateInfo?> checkTask = mgr.CheckForUpdatesAsync();
         Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(10));
         Task completed = await Task.WhenAny(checkTask, timeoutTask);
-        if (completed == timeoutTask)
-            return; // Timed out
-        if (completed.IsFaulted)
-        {
-            messageChangeCallback($"Task faulted. Exception: {completed.Exception.Message}");
-            await Task.Delay(TimeSpan.FromSeconds(5));
-            return;
-        }
+        if (completed == timeoutTask || completed.IsFaulted)
+            return; // Timed out or error (like no internet connection)
         UpdateInfo? newVersion = await checkTask;
         if (newVersion == null)
             return; // no update available
@@ -132,7 +129,7 @@ public partial class MainWindow : INavigationWindow
             ContentDialog dialog = new()
             {
                 Title = $"New version: {newVersion.TargetFullRelease.Version.ToFullString()}",
-                Content = "Update available.\n\nWant to download and install now?",
+                Content = "Download and install now?",
                 PrimaryButtonText = "Yes",
                 CloseButtonText = "Postpone"
             };
@@ -146,7 +143,6 @@ public partial class MainWindow : INavigationWindow
             // install new version and restart app
             mgr.ApplyUpdatesAndRestart(newVersion);
         }
-//#endif
     }
 
     static bool IsAdministrator()
