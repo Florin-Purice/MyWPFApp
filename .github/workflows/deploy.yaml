@@ -35,12 +35,19 @@ jobs:
       with:
         dotnet-version: 10.x
 
-    - name: Publish
-      run: dotnet publish -c Release --self-contained -r win-x64 -o .\publish
+    - name: Publish Selfcontained
+      run: dotnet publish -c Release --self-contained -r win-x64 -o .\publish-win-x64
+
+    - name: Dotnet Clean
+      run: dotnet clean
+
+    - name: Publish .NET10
+      run: dotnet publish -c Release --no-self-contained -r win-x64 -o .\publish-net10-win-x64
 
     - name: Create Velopack Release
       run: |
         dotnet tool install -g vpk
         vpk download github --repoUrl https://github.com/${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }}
-        vpk pack --msi -u MyWPFApp -v ${{ steps.get-version.outputs.version }} -p publish --packTitle "My WPF App" --mainExe MyWPFApp.exe
+        vpk pack --channel win-x64 --msi -u MyWPFApp -v ${{ steps.get-version.outputs.version }} -p .\publish-win-x64 --packTitle "My WPF App" --mainExe MyWPFApp.exe
+        vpk pack --channel net10-win-x64 --msi -u MyWPFApp -v ${{ steps.get-version.outputs.version }} -p .\publish-net10-win-x64 --packTitle "My WPF App" --mainExe MyWPFApp.exe
         vpk upload github --repoUrl https://github.com/${{ github.repository }} --publish --releaseName "MyWPFApp ${{ steps.get-version.outputs.version }}" --tag ${{ steps.get-version.outputs.version }} --token ${{ secrets.GITHUB_TOKEN }}
