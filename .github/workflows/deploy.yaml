@@ -51,4 +51,4 @@ jobs:
         vpk pack --channel win-x64 --msi -u MyWPFApp -v ${{ steps.get-version.outputs.version }} -p .\publish-win-x64 --packTitle "My WPF App" --mainExe MyWPFApp.exe
         vpk pack --channel win-x64-net10 --msi -u MyWPFApp -v ${{ steps.get-version.outputs.version }} -p .\publish-win-x64-net10 --packTitle "My WPF App" --mainExe MyWPFApp.exe
         vpk upload github --repoUrl https://github.com/${{ github.repository }} --channel win-x64 --releaseName "MyWPFApp ${{ steps.get-version.outputs.version }}" --tag ${{ steps.get-version.outputs.version }} --token ${{ secrets.GITHUB_TOKEN }}
-        vpk upload github --repoUrl https://github.com/${{ github.repository }} --channel win-x64-net10 --publish --releaseName "MyWPFApp ${{ steps.get-version.outputs.version }}" --tag ${{ steps.get-version.outputs.version }} --token ${{ secrets.GITHUB_TOKEN }}
+        vpk upload github --repoUrl https://github.com/${{ github.repository }} --channel win-x64-net10 --merge --publish --releaseName "MyWPFApp ${{ steps.get-version.outputs.version }}" --tag ${{ steps.get-version.outputs.version }} --token ${{ secrets.GITHUB_TOKEN }}
